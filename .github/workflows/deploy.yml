@@ -19,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18.x' # Ensure this matches your node version
+        node-version: '18.x'  # Ensure this matches your Node.js version
 
     - name: Install Dependencies
       run: npm install
@@ -55,10 +55,6 @@ jobs:
       run: terraform refresh
       working-directory: infra/terraform  # Path to Terraform files
 
-    - name: Terraform s3
-      run: terraform import aws_s3_bucket.terraform_state campus-rental-bucket
-      working-directory: infra/terraform  # Path to Terraform files
-
     - name: Terraform Destroy Existing Instance
       working-directory: infra/terraform
       run: terraform destroy -auto-approve -target=aws_instance.app_server
@@ -72,5 +68,3 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: terraform apply -auto-approve tfplan
       working-directory: infra/terraform  # Path to Terraform files
-
-      
