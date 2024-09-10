@@ -36,19 +36,25 @@ resource "aws_instance" "app_server" {
               cd /home/ec2-user/app
 
               # Build Docker image from Dockerfile
-              sudo docker build -t campus-rental-server .
+              sudo docker build -t campus-notifications-server .
 
               # Run the Docker container with auto-restart
-              sudo docker run -d --restart unless-stopped -p 80:3000 campus-rental-server
+              sudo docker run -d --restart unless-stopped -p 80:3000 campus-notifications-server
               EOF
 
   tags = {
-    Name = "KuduNav-Rental"
+    Name = "RentalServer"
   }
 
   lifecycle {
     create_before_destroy = true  # Create new instance before destroying old one
   }
+}
+
+# Associate an existing Elastic IP with the instance
+resource "aws_eip_association" "eip_assoc" {
+  instance_id   = aws_instance.app_server.id
+  allocation_id = "eipalloc-09dbb5ab8290b6b19"  # Use your actual Elastic IP allocation ID
 }
 
 output "instance_ip" {
