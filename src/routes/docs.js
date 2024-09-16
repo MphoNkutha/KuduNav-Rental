@@ -1,5 +1,5 @@
 import express from "express";
-import { __dirname } from "../index.js";
+import { __dirname } from "../config.js";
 
 const router = express.Router();
 
