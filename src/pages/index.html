@@ -1,118 +1,177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Bike Rentals API Documentation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-left: 4px solid #3498db;
-            overflow-x: auto;
-        }
-        code {
-            font-family: monospace;
-            background-color: #f1f1f1;
-            padding: 2px 4px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Rentals API Documentation</h1>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>API Documentation</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1 {
+                color: #2c3e50;
+            }
+            h2 {
+                color: #3498db;
+            }
+            h3 {
+                color: #e74c3c;
+            }
+            code {
+                background-color: #f4f4f4;
+                padding: 2px 4px;
+                border-radius: 4px;
+            }
+            .endpoint {
+                margin-bottom: 30px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>API Documentation</h1>
 
-    <h2>Endpoints</h2>
+        <h2>Rentals</h2>
 
-    <h3>Get Available Bikes</h3>
-    <p><strong>Method:</strong> GET</p>
-    <p><strong>URL:</strong> /api/vehicles</p>
-    <p><strong>Description:</strong> Retrieve the current list of available vehicles at various locations.</p>
-    <p><strong>Response:</strong></p>
-    <pre><code>{
-    "_id": "string",
-    "type": "string",
-    "station": "string",
-    "available": "boolean"
-}</code></pre>
+        <div class="endpoint">
+            <h3>GET /rentals</h3>
+            <p>Get all rentals</p>
+            <p><strong>Response:</strong> Array of rental objects</p>
+        </div>
 
-    <h3>Get Bike Details</h3>
-    <p><strong>Method:</strong> GET</p>
-    <p><strong>URL:</strong> /api/vehicles/{vehicle_id}</p>
-    <p><strong>Description:</strong> Retrieve detailed information about a specific bicycle/ scooter/ skateboard.</p>
-    <p><strong>Response:</strong></p>
-    <pre><code>{
-    "_id": "string",
-    "type": "string",
-    "station": "string",
-    "available": "boolean"
-}</code></pre>
+        <div class="endpoint">
+            <h3>POST /rentals/add</h3>
+            <p>Rent a vehicle</p>
+            <p><strong>Request body:</strong></p>
+            <ul>
+                <li><code>vehicleID</code>: ID of the vehicle to rent</li>
+                <li><code>userId</code>: ID of the user renting the vehicle</li>
+            </ul>
+            <p><strong>Response:</strong> Newly created rental object</p>
+        </div>
 
-    <h3>Reserve a Bike</h3>
-    <p><strong>Method:</strong> POST</p>
-    <p><strong>URL:</strong> /api/vehicles/{vehicle_id}/reserve</p>
-    <p><strong>Description:</strong> Reserve a vehicle for a specified time period.</p>
-    <p><strong>Request Body:</strong></p>
-    <pre><code>{
-    "user_id": "string",
-    "start_time": "string",
-    "end_time": "string"
-}</code></pre>
-    <p><strong>Response:</strong></p>
-    <pre><code>{
-    "reservation_id": "string",
-    "vehicle_id": "string",
-    "user_id": "string",
-    "start_time": "string",
-    "end_time": "string",
-    "status": "string"
-}</code></pre>
+        <div class="endpoint">
+            <h3>GET /rentals/:id</h3>
+            <p>Get a rental by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Rental ID</li>
+            </ul>
+            <p><strong>Response:</strong> Rental object</p>
+        </div>
 
-    <h3>Cancel a Reservation</h3>
-    <p><strong>Method:</strong> DELETE</p>
-    <p><strong>URL:</strong> /api/reservations/{reservation_id}</p>
-    <p><strong>Description:</strong> Cancel an existing bike reservation.</p>
-    <p><strong>Response:</strong></p>
-    <pre><code>{
-    "reservation_id": "string",
-    "status": "string"
-}</code></pre>
+        <div class="endpoint">
+            <h3>PUT /rentals/:id</h3>
+            <p>Update a rental by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Rental ID</li>
+            </ul>
+            <p><strong>Request body:</strong> Updated rental data</p>
+            <p><strong>Response:</strong> Updated rental object</p>
+        </div>
 
-    <h3>Get User Reservations</h3>
-    <p><strong>Method:</strong> GET</p>
-    <p><strong>URL:</strong> /api/users/{user_id}/reservations</p>
-    <p><strong>Description:</strong> Get a list of current and past reservations for a user.</p>
-    <p><strong>Response:</strong></p>
-    <pre><code>{
-    "reservations": [
-        {
-            "reservation_id": "string",
-            "bike_id": "string",
-            "start_time": "string",
-            "end_time": "string",
-            "status": "string"
-        }
-    ]
-}</code></pre>
+        <div class="endpoint">
+            <h3>DELETE /rentals/:id</h3>
+            <p>Delete a rental by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Rental ID</li>
+            </ul>
+            <p><strong>Response:</strong> 204 No Content</p>
+        </div>
 
-    <h2>Error Handling</h2>
-    <p><strong>Common Error Responses:</strong></p>
-    <ul>
-        <li>400 Bad Request: Invalid input or parameters.</li>
-        <li>401 Unauthorized: User not authenticated.</li>
-        <li>404 Not Found: Resource not found (e.g., bike or reservation).</li>
-        <li>500 Internal Server Error: General server error.</li>
-    </ul>
+        <h2>Reservations</h2>
 
-    <h2>Authentication</h2>
-    <p><strong>Authorization:</strong> Use API keys or OAuth tokens.</p>
-    <p><strong>Example Header:</strong></p>
-    <pre><code>Authorization: Bearer {token}</code></pre>
-</body>
+        <div class="endpoint">
+            <h3>POST /reservations/add</h3>
+            <p>Create a new reservation</p>
+            <p><strong>Request body:</strong> Reservation data</p>
+            <p><strong>Response:</strong> Newly created reservation object</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>GET /reservations</h3>
+            <p>Get all reservations</p>
+            <p><strong>Response:</strong> Array of reservation objects</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>GET /reservations/:id</h3>
+            <p>Get a reservation by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Reservation ID</li>
+            </ul>
+            <p><strong>Response:</strong> Reservation object</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>PUT /reservations/:id</h3>
+            <p>Update a reservation by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Reservation ID</li>
+            </ul>
+            <p><strong>Request body:</strong> Updated reservation data</p>
+            <p><strong>Response:</strong> Updated reservation object</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>DELETE /reservations/:id</h3>
+            <p>Delete a reservation by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Reservation ID</li>
+            </ul>
+            <p><strong>Response:</strong> 204 No Content</p>
+        </div>
+
+        <h2>Vehicles</h2>
+
+        <div class="endpoint">
+            <h3>GET /vehicles</h3>
+            <p>Get available vehicles</p>
+            <p><strong>Response:</strong> Array of available vehicle objects</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>GET /vehicles/:id</h3>
+            <p>Get a vehicle by ID</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Vehicle ID</li>
+            </ul>
+            <p><strong>Response:</strong> Vehicle object</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>POST /vehicles/add</h3>
+            <p>Add a new vehicle</p>
+            <p><strong>Request body:</strong></p>
+            <ul>
+                <li><code>type</code>: Type of the vehicle</li>
+                <li>
+                    <code>station</code>: Station where the vehicle is located
+                </li>
+            </ul>
+            <p><strong>Response:</strong> Newly created vehicle object</p>
+        </div>
+
+        <div class="endpoint">
+            <h3>DELETE /vehicles/:id</h3>
+            <p>Delete a vehicle</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>id</code>: Vehicle ID</li>
+            </ul>
+            <p><strong>Response:</strong> Deleted vehicle object</p>
+        </div>
+    </body>
 </html>
