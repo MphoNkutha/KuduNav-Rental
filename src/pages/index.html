@@ -3,126 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bike Reservation System</title>
+    <title>Campus Bike Rentals API Documentation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        form {
-            margin-bottom: 20px;
+        h1, h2, h3 {
+            color: #2c3e50;
         }
-        .result {
-            margin-top: 20px;
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            overflow-x: auto;
         }
-        .result p {
-            margin: 0;
+        code {
+            font-family: monospace;
+            background-color: #f1f1f1;
+            padding: 2px 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Bike Reservation System</h1>
+    <h1>Rentals API Documentation</h1>
 
-    <h2>Available Bikes</h2>
-    <button id="fetchBikes">Fetch Available Bikes</button>
-    <ul id="bikeList"></ul>
+    <h2>Endpoints</h2>
 
-    <h2>Create Reservation</h2>
-    <form id="reservationForm">
-        <label for="bikeId">Bike ID:</label>
-        <input type="number" id="bikeId" required>
-        <label for="userId">User ID:</label>
-        <input type="text" id="userId" required>
-        <button type="submit">Reserve Bike</button>
-    </form>
+    <h3>Get Available Bikes</h3>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>URL:</strong> /api/vehicles</p>
+    <p><strong>Description:</strong> Retrieve the current list of available vehicles at various locations.</p>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "_id": "string",
+    "type": "string",
+    "station": "string",
+    "available": "boolean"
+}</code></pre>
 
-    <h2>Rent a Bike</h2>
-    <form id="rentForm">
-        <label for="reservationId">Reservation ID:</label>
-        <input type="text" id="reservationId" required>
-        <label for="rentUserId">User ID:</label>
-        <input type="text" id="rentUserId" required>
-        <button type="submit">Rent Bike</button>
-    </form>
+    <h3>Get Bike Details</h3>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>URL:</strong> /api/vehicles/{vehicle_id}</p>
+    <p><strong>Description:</strong> Retrieve detailed information about a specific bicycle/ scooter/ skateboard.</p>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "_id": "string",
+    "type": "string",
+    "station": "string",
+    "available": "boolean"
+}</code></pre>
 
-    <h2>Cancel Reservation</h2>
-    <form id="cancelForm">
-        <label for="cancelReservationId">Reservation ID:</label>
-        <input type="text" id="cancelReservationId" required>
-        <label for="cancelUserId">User ID:</label>
-        <input type="text" id="cancelUserId" required>
-        <button type="submit">Cancel Reservation</button>
-    </form>
+    <h3>Reserve a Bike</h3>
+    <p><strong>Method:</strong> POST</p>
+    <p><strong>URL:</strong> /api/vehicles/{vehicle_id}/reserve</p>
+    <p><strong>Description:</strong> Reserve a vehicle for a specified time period.</p>
+    <p><strong>Request Body:</strong></p>
+    <pre><code>{
+    "user_id": "string",
+    "start_time": "string",
+    "end_time": "string"
+}</code></pre>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "reservation_id": "string",
+    "vehicle_id": "string",
+    "user_id": "string",
+    "start_time": "string",
+    "end_time": "string",
+    "status": "string"
+}</code></pre>
 
-    <h2>Check User Reservations</h2>
-    <form id="checkReservationsForm">
-        <label for="checkUserId">User ID:</label>
-        <input type="text" id="checkUserId" required>
-        <button type="submit">Check Reservations</button>
-    </form>
+    <h3>Cancel a Reservation</h3>
+    <p><strong>Method:</strong> DELETE</p>
+    <p><strong>URL:</strong> /api/reservations/{reservation_id}</p>
+    <p><strong>Description:</strong> Cancel an existing bike reservation.</p>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "reservation_id": "string",
+    "status": "string"
+}</code></pre>
 
-    <div class="result" id="result"></div>
+    <h3>Get User Reservations</h3>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>URL:</strong> /api/users/{user_id}/reservations</p>
+    <p><strong>Description:</strong> Get a list of current and past reservations for a user.</p>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "reservations": [
+        {
+            "reservation_id": "string",
+            "bike_id": "string",
+            "start_time": "string",
+            "end_time": "string",
+            "status": "string"
+        }
+    ]
+}</code></pre>
 
-    <script>
-        document.getElementById('fetchBikes').addEventListener('click', async () => {
-            const response = await fetch('/bikes');
-            const bikes = await response.json();
-            const bikeList = document.getElementById('bikeList');
-            bikeList.innerHTML = bikes.map(bike => `<li>Type: ${bike.type}, Station: ${bike.station}</li>`).join('');
-        });
+    <h2>Error Handling</h2>
+    <p><strong>Common Error Responses:</strong></p>
+    <ul>
+        <li>400 Bad Request: Invalid input or parameters.</li>
+        <li>401 Unauthorized: User not authenticated.</li>
+        <li>404 Not Found: Resource not found (e.g., bike or reservation).</li>
+        <li>500 Internal Server Error: General server error.</li>
+    </ul>
 
-        document.getElementById('reservationForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const bikeId = document.getElementById('bikeId').value;
-            const userId = document.getElementById('userId').value;
-            const response = await fetch('/reservation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ bikeId: parseInt(bikeId), userId })
-            });
-            const result = await response.json();
-            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
-        });
-
-        document.getElementById('rentForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const reservationId = document.getElementById('reservationId').value;
-            const userId = document.getElementById('rentUserId').value;
-            const response = await fetch('/rent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reservationId, userId })
-            });
-            const result = await response.json();
-            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
-        });
-
-        document.getElementById('cancelForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const reservationId = document.getElementById('cancelReservationId').value;
-            const userId = document.getElementById('cancelUserId').value;
-            const response = await fetch('/cancel', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reservationId, userId })
-            });
-            const result = await response.json();
-            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
-        });
-
-        document.getElementById('checkReservationsForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const userId = document.getElementById('checkUserId').value;
-            const response = await fetch(`/reservations/${userId}`);
-            const result = await response.json();
-            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
-        });
-    </script>
+    <h2>Authentication</h2>
+    <p><strong>Authorization:</strong> Use API keys or OAuth tokens.</p>
+    <p><strong>Example Header:</strong></p>
+    <pre><code>Authorization: Bearer {token}</code></pre>
 </body>
 </html>
