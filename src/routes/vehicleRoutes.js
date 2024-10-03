@@ -1,24 +1,25 @@
 import express from 'express';
-import Vehicles from '../models/vehicles.js';
+import Vehicles, { populateObject, VehicleTypes } from '../models/vehicles.js';
 
 const router = express.Router();
 
-// Get available vehicles
+// Get vehicles
 router.get('/vehicles', async (req, res) => {
   try {
-    const vehicles = await Vehicles.find({ available: true });
+    const vehicles = VehicleTypes.map((_) =>  populateObject(_))
+    
     res.json(vehicles);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get a vehicle by ID
-router.get('/vehicles/:id', async (req, res) => {
-    const { id } = req.params;
+// Get a vehicle by Type
+router.get('/vehicles/:type', async (req, res) => {
+    const { type } = req.params;
   
     try {
-      const vehicle = await Vehicles.findById(id);
+      const vehicle = await Vehicles.findOne({type});
       console.log(vehicle);
       if (!vehicle) {
         return res.status(404).json({ message: 'Vehicle not found' });
@@ -46,16 +47,14 @@ router.get('/vehicles/:id', async (req, res) => {
   
 
 // Add a new vehicle
+
+
 router.post('/vehicles/add', async (req, res) => {
   const { type, station } = req.body;
 
   if (!type || !station ) {
     return res.status(400).json({ message: 'Missing type or station' });
   }
-//   if(!(station == "Hall-29") || !(station == "Library-Lawns")||!(station == "Wits-Science-Stadium") || !(station == "Bozolli")){
-//     return res.status(400).json({ message: 'Invalid station' });
-//   }
-// if(!(type == "Bicycle") || !(type == "Scooter") || !(type == "Skateboard") )
 
   try {
     const newVehicle = new Vehicles({ type, station });
