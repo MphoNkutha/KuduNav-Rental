@@ -1,4 +1,5 @@
 import express from 'express';
+dotenv.config();
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import vehicleRoutes from './routes/vehicleRoutes.js';
@@ -7,20 +8,17 @@ import rentalRoutes from './routes/rentalRoutes.js';
 import { MongoClient } from 'mongodb'; 
 import { ServerApiVersion } from 'mongodb';
 
-dotenv.config();
-
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+const uri = process.env.MONGODB_URI;
 
 // Connect to MongoDB using Mongoose
 // mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 //   .then(() => console.log("Connected to MongoDB using Mongoose!"))
 //   .catch(err => console.error("MongoDB connection error:", err));
 
-
-const uri = "mongodb+srv://Mpho:flTfkgI7qOnJNIYp@milky.mrz11.mongodb.net/?retryWrites=true&w=majority&appName=milky";
 
 const dbInit = async () => {
     try {
