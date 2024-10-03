@@ -12,7 +12,7 @@ const App = () => {
 
   const fetchVehicles = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles');
+      const response = await fetch('http://localhost:3000/api/vehicles');
       const data = await response.json();
       setVehicles(data);
     } catch (error) {
@@ -22,7 +22,7 @@ const App = () => {
 
   const rentVehicle = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/rentals/add', {
+      const response = await fetch('http://localhost:3000/api/rentals/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ const App = () => {
 
   const cancelReservation = async (reservationId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reservations/${reservationId}`, {
+      const response = await fetch(`http://localhost:3000/api/reservations/${reservationId}`, {
         method: 'DELETE',
       });
       if (response.ok) {

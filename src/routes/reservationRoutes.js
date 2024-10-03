@@ -9,6 +9,7 @@ router.post('/reservations/add', async (req, res) => {
     const reservation = new Reservation(req.body);
     await reservation.save();
     res.status(201).send(reservation);
+    res.json({ message: 'Reservation created successfully' });
   } catch (error) {
     res.status(400).send(error);
   }
