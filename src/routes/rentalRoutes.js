@@ -58,7 +58,7 @@ router.get('/rentals/:id', async (req, res) => {
 });
 
 // Update a rental by ID
-router.put('/rentals/:id', async (req, res) => {
+router.put('/rentals/update/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const rental = await Rental.findByIdAndUpdate(id, req.body, { new: true });
@@ -71,17 +71,36 @@ router.put('/rentals/:id', async (req, res) => {
   }
 });
 
-// Delete a rental by ID
-router.delete('/rentals/:id', async (req, res) => {
+// End a rental and return a vehicle
+router.put('/rentals/return/:id', async (req, res) => {
   const { id } = req.params;
+  const { station } = req.body; // Get the drop-off station from request body
+
   try {
-    const rental = await Rental.findByIdAndDelete(id);
+    // Find the rental by ID
+    const rental = await Rental.findById(id);
     if (!rental) {
-      return res.status(404).send();
+      return res.status(404).json({ message: 'Rental not found' });
     }
-    res.status(204).send();
+
+    // Find the vehicle associated with the rental
+    const vehicle = await Vehicle.findById(rental.vehicleID);
+    if (!vehicle) {
+      return res.status(404).json({ message: 'Vehicle not found' });
+    }
+
+    // Update the vehicle's availability and station
+    vehicle.available = true;
+    vehicle.station = station; // Update the vehicle's station
+    await vehicle.save();
+
+    rental.returnedAt = new Date(); 
+    rental.station = station;
+    await rental.save();
+
+    res.status(200).json({ message: 'Vehicle returned successfully', vehicle });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({ error: error.message });
   }
 });
 

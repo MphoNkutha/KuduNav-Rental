@@ -19,10 +19,26 @@ router.get('/vehicles/:id', async (req, res) => {
   
     try {
       const vehicle = await Vehicles.findById(id);
+      console.log(vehicle);
       if (!vehicle) {
         return res.status(404).json({ message: 'Vehicle not found' });
       }
       res.status(200).json(vehicle);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+// Get a vehicle by station
+  router.get('/station/:station', async (req, res) => {
+    const {station} = req.params;
+  
+    try {
+      const vehicle = await Vehicles.find({ station });
+      if (!vehicle) {
+        return res.status(404).json({ message: 'No vehicles found at this station' });
+      }
+      res.json(vehicle);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
