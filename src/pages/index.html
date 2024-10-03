@@ -1,177 +1,278 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>API Documentation</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1 {
-                color: #2c3e50;
-            }
-            h2 {
-                color: #3498db;
-            }
-            h3 {
-                color: #e74c3c;
-            }
-            code {
-                background-color: #f4f4f4;
-                padding: 2px 4px;
-                border-radius: 4px;
-            }
-            .endpoint {
-                margin-bottom: 30px;
-                border-bottom: 1px solid #eee;
-                padding-bottom: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>API Documentation</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
 
-        <h2>Rentals</h2>
+<div class="container">
+    <h1>Vehicle Rental API Documentation</h1>
+    <p>This is the API documentation for the Vehicle Rental system, which allows users to manage vehicle rentals, reservations, and vehicles.</p>
 
-        <div class="endpoint">
-            <h3>GET /rentals</h3>
-            <p>Get all rentals</p>
-            <p><strong>Response:</strong> Array of rental objects</p>
-        </div>
+    <h2>Rentals</h2>
+    
+    <h3>1. Get All Rentals</h3>
+    <p>Retrieve all active rentals.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/rentals</code></pre>
+    <strong>Response:</strong>
+    <pre><code>[
+  {
+    "_id": "rentalID",
+    "vehicleID": "vehicleID",
+    "userId": "userID",
+    "returnedAt": null,
+    "station": "stationName"
+  }
+]</code></pre>
 
-        <div class="endpoint">
-            <h3>POST /rentals/add</h3>
-            <p>Rent a vehicle</p>
-            <p><strong>Request body:</strong></p>
-            <ul>
-                <li><code>vehicleID</code>: ID of the vehicle to rent</li>
-                <li><code>userId</code>: ID of the user renting the vehicle</li>
-            </ul>
-            <p><strong>Response:</strong> Newly created rental object</p>
-        </div>
+    <h3>2. Rent a Vehicle</h3>
+    <p>Rent a vehicle by specifying a vehicle ID and a user ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>POST /api/v1/rental/rentals/add</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "vehicleID": "abc123",
+  "userId": "user789"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "message": "Vehicle rented successfully",
+  "rental": {
+    "vehicleID": "abc123",
+    "userId": "user789"
+  }
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>GET /rentals/:id</h3>
-            <p>Get a rental by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Rental ID</li>
-            </ul>
-            <p><strong>Response:</strong> Rental object</p>
-        </div>
+    <h3>3. Return a Rental</h3>
+    <p>Return a rented vehicle by its rental ID and specify the return station.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>PUT /api/v1/rental/rentals/return/:id</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "station": "Central Station"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "message": "Vehicle returned successfully",
+  "vehicle": {
+    "available": true,
+    "station": "Central Station"
+  }
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>PUT /rentals/:id</h3>
-            <p>Update a rental by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Rental ID</li>
-            </ul>
-            <p><strong>Request body:</strong> Updated rental data</p>
-            <p><strong>Response:</strong> Updated rental object</p>
-        </div>
+    <h3>4. Get a Rental by ID</h3>
+    <p>Retrieve a rental by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/rentals/:id</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "id": "rental_id",
+  "vehicleID": "vehicle_id",
+  "userId": "user_id",
+  "returnedAt": null
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>DELETE /rentals/:id</h3>
-            <p>Delete a rental by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Rental ID</li>
-            </ul>
-            <p><strong>Response:</strong> 204 No Content</p>
-        </div>
+    <h3>5. Update a Rental by ID</h3>
+    <p>Update a rental by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>PUT /api/v1/rental/rentals/update/:id</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "returnedAt": "2024-01-02T00:00:00Z"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "id": "rental_id",
+  "vehicleID": "vehicle_id",
+  "userId": "user_id",
+  "returnedAt": "2024-01-02T00:00:00Z"
+}</code></pre>
 
-        <h2>Reservations</h2>
+    <h2>Reservations</h2>
 
-        <div class="endpoint">
-            <h3>POST /reservations/add</h3>
-            <p>Create a new reservation</p>
-            <p><strong>Request body:</strong> Reservation data</p>
-            <p><strong>Response:</strong> Newly created reservation object</p>
-        </div>
+    <h3>1. Create a Reservation</h3>
+    <p>Create a new reservation for a vehicle.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>POST /api/v1/rental/reservations/add</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "vehicleID": "bike456",
+  "userId": "user789"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "_id": "reservationID",
+  "vehicleID": "bike456",
+  "userId": "user789"
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>GET /reservations</h3>
-            <p>Get all reservations</p>
-            <p><strong>Response:</strong> Array of reservation objects</p>
-        </div>
+    <h3>2. Get All Reservations</h3>
+    <p>Retrieve all reservations.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/reservations</code></pre>
+    <strong>Response:</strong>
+    <pre><code>[
+  {
+    "_id": "reservationID",
+    "vehicleID": "bike456",
+    "userId": "user789"
+  }
+]</code></pre>
 
-        <div class="endpoint">
-            <h3>GET /reservations/:id</h3>
-            <p>Get a reservation by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Reservation ID</li>
-            </ul>
-            <p><strong>Response:</strong> Reservation object</p>
-        </div>
+    <h3>3. Cancel a Reservation</h3>
+    <p>Cancel a reservation by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>DELETE /api/v1/rental/reservations/:id</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "message": "Reservation cancelled successfully",
+  "reservation": {
+    "_id": "reservationID",
+    "userId": "user789",
+    "vehicleID": "bike456"
+  }
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>PUT /reservations/:id</h3>
-            <p>Update a reservation by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Reservation ID</li>
-            </ul>
-            <p><strong>Request body:</strong> Updated reservation data</p>
-            <p><strong>Response:</strong> Updated reservation object</p>
-        </div>
+    <h3>4. Get a Reservation by ID</h3>
+    <p>Retrieve a reservation by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/reservations/:id</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "id": "reservation_id",
+  "vehicleID": "vehicle_id",
+  "userId": "user_id",
+  "createdAt": "2024-01-01T12:00:00Z"
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>DELETE /reservations/:id</h3>
-            <p>Delete a reservation by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Reservation ID</li>
-            </ul>
-            <p><strong>Response:</strong> 204 No Content</p>
-        </div>
+    <h3>5. Update a Reservation by ID</h3>
+    <p><strong>Endpoint:</strong> <code>PUT api/v1/rental/reservations/:id</code></p>
+    <p><strong>Description:</strong> Update a reservation by its ID.</p>
+    <p><strong>Request Body:</strong></p>
+    <pre><code>{
+    "vehicleID": "new_vehicle_id",
+    "userId": "new_user_id"
+    }</code></pre>
+    <p><strong>Response:</strong></p>
+    <pre><code>{
+    "id": "reservation_id",
+    "vehicleID": "new_vehicle_id",
+    "userId": "new_user_id",
+    "updatedAt": "2024-01-02T00:00:00Z"
+}</code></pre>
 
-        <h2>Vehicles</h2>
 
-        <div class="endpoint">
-            <h3>GET /vehicles</h3>
-            <p>Get available vehicles</p>
-            <p><strong>Response:</strong> Array of available vehicle objects</p>
-        </div>
 
-        <div class="endpoint">
-            <h3>GET /vehicles/:id</h3>
-            <p>Get a vehicle by ID</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Vehicle ID</li>
-            </ul>
-            <p><strong>Response:</strong> Vehicle object</p>
-        </div>
+    <h2>Errors</h2>
+    <p>Common error responses:</p>
+    <pre><code>{
+  "error": "Message describing the error"
+}</code></pre>
 
-        <div class="endpoint">
-            <h3>POST /vehicles/add</h3>
-            <p>Add a new vehicle</p>
-            <p><strong>Request body:</strong></p>
-            <ul>
-                <li><code>type</code>: Type of the vehicle</li>
-                <li>
-                    <code>station</code>: Station where the vehicle is located
-                </li>
-            </ul>
-            <p><strong>Response:</strong> Newly created vehicle object</p>
-        </div>
+    <h2>Vehicles</h2>
 
-        <div class="endpoint">
-            <h3>DELETE /vehicles/:id</h3>
-            <p>Delete a vehicle</p>
-            <p><strong>Parameters:</strong></p>
-            <ul>
-                <li><code>id</code>: Vehicle ID</li>
-            </ul>
-            <p><strong>Response:</strong> Deleted vehicle object</p>
-        </div>
-    </body>
+    <h3>1. Get All Vehicles</h3>
+    <p>Retrieve all available vehicles.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/vehicles</code></pre>
+    <strong>Response:</strong>
+    <pre><code>[
+  {
+    "_id": "vehicleID1",
+    "type": "bike",
+    "available": true,
+    "station": "Hall-29"
+  },
+  {
+    "_id": "vehicleID2",
+    "type": "scooter",
+    "available": false,
+    "station": "Hall-29"
+  }
+]</code></pre>
+
+    <h3>2. Get Vehicle by ID</h3>
+    <p>Retrieve details about a specific vehicle by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>GET /api/v1/rental/vehicles/:id</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "_id": "vehicleID1",
+  "type": "bike",
+  "available": true,
+  "station": "Bozolli"
+}</code></pre>
+
+    <h3>3. Add a New Vehicle</h3>
+    <p>Add a new vehicle to the system.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>POST /api/v1/rental/vehicles/add</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "type": "bike",
+  "station": "Bozolli"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "_id": "vehicleID3",
+  "type": "bike",
+  "available": true,
+  "station": "Hall-29"
+}</code></pre>
+
+    <h3>4. Get a Vehicle by station</h3>
+    <p>Update the details of a specific vehicle by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>PUT /api/v1/rental/station/:station</code></pre>
+    <strong>Request Body:</strong>
+    <pre><code>{
+  "station": "Bozolli"
+}</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "_id": "vehicleID3",
+  "type": "bike",
+  "available": true,
+  "station": "Hall-29"
+}</code></pre>
+
+    <h3>5. Delete a Vehicle by ID</h3>
+    <p>Remove a vehicle from the system by its ID.</p>
+    <strong>Endpoint:</strong>
+    <pre><code>DELETE /api/v1/rental/vehicles/:id</code></pre>
+    <strong>Response:</strong>
+    <pre><code>{
+  "message": "Vehicle deleted successfully"
+}</code></pre>
+
+</body>
 </html>
+
+
