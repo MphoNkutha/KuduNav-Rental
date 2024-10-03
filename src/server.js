@@ -34,9 +34,9 @@ const dbInit = async () => {
 }
 await dbInit();
 // Use the routes
-app.use('/api', vehicleRoutes);
-app.use('/api', reservationRoutes);
-app.use('/api', rentalRoutes);
+app.use('/api/v1/rental', vehicleRoutes);
+app.use('/api/v1/rental', reservationRoutes);
+app.use('/api/v1/rental', rentalRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
