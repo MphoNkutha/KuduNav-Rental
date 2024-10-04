@@ -1,6 +1,6 @@
 import express from 'express';
 import Rental from '../models/rental.js'; 
-import Vehicle from '../models/vehicles.js';
+import Vehicle, { Prices } from '../models/vehicles.js';
 
 
 const router = express.Router();
@@ -18,26 +18,24 @@ router.get('/rentals', async (req, res) => {
 // Rent a vehicle
 router.post('/rentals/add', async (req, res) => {
   try {
-    const { vehicleID, userId } = req.body; // Get all necessary data
-    const vehicle = await Vehicle.findById(vehicleID);
-    console.log(vehicle);
+    const { type, station } = req.body; // Get all necessary data
+    const userId = req.user
+    const vehicle = await Vehicle.findOne({type, available:true,station });
     
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found' });
     }
 
-    // Check if the vehicle is available
-    if (!vehicle.available) {
-      return res.status(400).json({ vehicle, message: 'Vehicle is not available for rental' });
-    }
-
     vehicle.available = false;
     await vehicle.save(); 
     
-    const newRental = new Rental({ vehicleID, userId });
+    const newRental = await Rental.findOne({ userId, used:false, amount:Prices[type] });
+    newRental.vehicleID = vehicle._id
+    newRental.pickupPoint = station
+    newRental.used = true
     await newRental.save();
     
-    res.status(201).json({ message: 'Vehicle rented successfully', rental: newRental });
+    res.status(201).json({ message: 'Vehicle rental object created successfully', rental: newRental });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -61,7 +59,7 @@ router.get('/rentals/:id', async (req, res) => {
 router.put('/rentals/update/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const rental = await Rental.findByIdAndUpdate(id, req.body, { new: true });
+    const rental = await Rental.findByIdAndUpdate(id, {...req.body});
     if (!rental) {
       return res.status(404).send();
     }
