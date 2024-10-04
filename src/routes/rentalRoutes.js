@@ -15,31 +15,57 @@ router.get('/rentals', async (req, res) => {
   }
 });
 
-// Rent a vehicle
+// Rent a vehicle, given vehicle type, station, and user ID
 router.post('/rentals/add', async (req, res) => {
+  const { type, station, userId} = req.body;
+
   try {
-    const { vehicleID, userId } = req.body; // Get all necessary data
-    const vehicle = await Vehicle.findById(vehicleID);
-    console.log(vehicle);
-    
-    if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
+    // Validate the station
+    const validStations = ["Hall-29", "Library-Lawns", "Wits-Science-Stadium", "Bozolli"];
+    if (!validStations.includes(station)) {
+      return res.status(400).json({ message: 'Invalid station' });
     }
 
-    // Check if the vehicle is available
-    if (!vehicle.available) {
-      return res.status(400).json({ vehicle, message: 'Vehicle is not available for rental' });
+    // Validate the vehicle type
+    const validVehicleTypes = ["Bicycle", "Scooter", "Skateboard"];
+    if (!validVehicleTypes.includes(type)) {
+      return res.status(400).json({ message: 'Invalid vehicle type' });
     }
 
-    vehicle.available = false;
-    await vehicle.save(); 
+    //Validate userId
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    // Find all available vehicles at the station
+    const availableVehicles = await Vehicle.find({ type, station, available: true });
     
-    const newRental = new Rental({ vehicleID, userId });
+    // If no available vehicles, return an error message
+    if (availableVehicles.length === 0) {
+      return res.status(404).json({ message: 'No available vehicles at this station' });
+    }
+
+    // Select the first available vehicle and reserve it
+    const selectedVehicle = availableVehicles[0];
+    selectedVehicle.available = false; // Mark it as unavailable
+    await selectedVehicle.save(); // Save the updated vehicle status
+
+    // Create a new reservation
+    const newRental = new Rental({
+      vehicleID: selectedVehicle._id,
+      userId
+    });
     await newRental.save();
-    
-    res.status(201).json({ message: 'Vehicle rented successfully', rental: newRental });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    // Send back the reserved vehicle and reservation details
+    res.status(201).json({
+      message: 'Rental successful',
+      vehicle: selectedVehicle,
+      rental: newRental
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error });
   }
 });
 
@@ -94,9 +120,12 @@ router.put('/rentals/return/:id', async (req, res) => {
     vehicle.station = station; // Update the vehicle's station
     await vehicle.save();
 
+
     rental.returnedAt = new Date(); 
     rental.station = station;
-    await rental.save();
+
+    //Remove the rental from the "all rentals" collection
+    await Rental.findByIdAndDelete(id);
 
     res.status(200).json({ message: 'Vehicle returned successfully', vehicle });
   } catch (error) {

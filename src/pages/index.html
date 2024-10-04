@@ -53,25 +53,36 @@
 ]</code></pre>
 
     <h3>2. Rent a Vehicle</h3>
-    <p>Rent a vehicle by specifying a vehicle ID and a user ID.</p>
+    <p>Rent a vehicle by specifying a vehicle type, pick-up station and user id.</p>
     <strong>Endpoint:</strong>
     <pre><code>POST /api/v1/rental/rentals/add</code></pre>
     <strong>Request Body:</strong>
     <pre><code>{
-  "vehicleID": "abc123",
-  "userId": "user789"
+  "type": "Scooter",
+  "userId": "64f9c6d5d6a16e0012f9f9d3",
+  "station": "Bozolli"
 }</code></pre>
     <strong>Response:</strong>
     <pre><code>{
-  "message": "Vehicle rented successfully",
+  "message": "Rental successful",
+  "vehicle": {
+    "_id": "66fdd727b1f2a53ede1b67de",
+    "type": "Scooter",
+    "station": "Bozolli",
+    "available": false,
+    "__v": 0
+  },
   "rental": {
-    "vehicleID": "abc123",
-    "userId": "user789"
+    "userId": "64f9c6d5d6a16e0012f9f9d3",
+    "vehicleID": "66fdd727b1f2a53ede1b67de",
+    "_id": "66ff202dafd656e5c6bbf92d",
+    "rentTimestamp": "2024-10-03T22:52:29.330Z",
+    "__v": 0
   }
 }</code></pre>
 
-    <h3>3. Return a Rental</h3>
-    <p>Return a rented vehicle by its rental ID and specify the return station.</p>
+    <h3>3. End a Rental</h3>
+    <p>Return a rented vehicle by rental ID and specify the return station.</p>
     <strong>Endpoint:</strong>
     <pre><code>PUT /api/v1/rental/rentals/return/:id</code></pre>
     <strong>Request Body:</strong>
@@ -80,11 +91,14 @@
 }</code></pre>
     <strong>Response:</strong>
     <pre><code>{
-  "message": "Vehicle returned successfully",
-  "vehicle": {
-    "available": true,
-    "station": "Central Station"
-  }
+        "message": "Vehicle returned successfully",
+        "vehicle": {
+          "_id": "66fdd727b1f2a53ede1b67de",
+          "type": "Scooter",
+          "station": "Hall-29",
+          "available": true,
+          "__v": 0
+        }
 }</code></pre>
 
     <h3>4. Get a Rental by ID</h3>
@@ -118,20 +132,33 @@
     <h2>Reservations</h2>
 
     <h3>1. Create a Reservation</h3>
-    <p>Create a new reservation for a vehicle.</p>
+    <p>Create a new reservation for a vehicle, given userId, vehicle type and pick-up station.</p>
     <strong>Endpoint:</strong>
     <pre><code>POST /api/v1/rental/reservations/add</code></pre>
     <strong>Request Body:</strong>
     <pre><code>{
-  "vehicleID": "bike456",
-  "userId": "user789"
+  "type": "Bicycle",
+  "userId": "user789",
+  "station": "Hall-29"
 }</code></pre>
     <strong>Response:</strong>
     <pre><code>{
-  "_id": "reservationID",
-  "vehicleID": "bike456",
-  "userId": "user789"
-}</code></pre>
+        "message": "Reservation successful",
+        "vehicle": {
+          "_id": "66fe4c01c0381ca600059429",
+          "type": "Bicycle",
+          "station": "Hall-29",
+          "available": false,
+          "__v": 0
+        },
+        "reservation": {
+          "userId": "64f9c6d5d6a16e0012f9f9d3",
+          "status": "reserved",
+          "_id": "66ff22beafd656e5c6bbf937",
+          "timestamp": "2024-10-03T23:03:26.941Z",
+          "__v": 0
+        }
+      }</code></pre>
 
     <h3>2. Get All Reservations</h3>
     <p>Retrieve all reservations.</p>
@@ -187,6 +214,38 @@
     "userId": "new_user_id",
     "updatedAt": "2024-01-02T00:00:00Z"
 }</code></pre>
+
+<h3>6. Redeem a reservation and start a rental</h3>
+<p><strong>Endpoint:</strong> <code>POST api/v1/rental/reservations/redeem</code></p>
+<p><strong>Description:</strong> Redeem a reservation.</p>
+<p><strong>Request Body Example:</strong></p>
+<pre><code>{
+    "reservationId": "64b6b1f19b2346001cdfe39d"
+  }</code></pre>
+<p><strong>Response Example:</strong></p>
+<pre><code>{
+    "message": "Rental started successfully",
+    "reservation": {
+      "_id": "64b6b1f19b2346001cdfe39d",
+      "vehicleId": "64b6b1f19b2346001cdfe39e",
+      "userId": "64b6b1f19b2346001cdfe39f",
+      "startTime": "2024-10-04T08:34:12.000Z"
+    },
+    "vehicle": {
+      "_id": "64b6b1f19b2346001cdfe39e",
+      "type": "Bicycle",
+      "station": "Library-Lawns",
+      "available": false
+    },
+    "rental": {
+      "_id": "64b6b1f19b2346001cdfe3a0",
+      "vehicleID": "64b6b1f19b2346001cdfe39e",
+      "userId": "64b6b1f19b2346001cdfe39f",
+      "startTime": "2024-10-04T08:34:12.000Z"
+    }
+  }</code></pre>
+
+
 
 
 
