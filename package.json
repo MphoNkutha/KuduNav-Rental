@@ -12,7 +12,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/bin/ww.js",
-    "test": "echo test"
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

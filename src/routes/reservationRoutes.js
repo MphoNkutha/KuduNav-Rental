@@ -10,7 +10,7 @@ router.post('/reservations/add', async (req, res) => {
 
   try {
     // Validate the station
-    const validStations = ["Hall-29", "Library-Lawns", "Wits-Science-Stadium", "Bozolli"];
+    const validStations = ["Hall 29 Rental Station", "Library Lawns Rental Station", "WSS Rental Station", "Bozolli Rental Station"];
     if (!validStations.includes(station)) {
       return res.status(400).json({ message: 'Invalid station' });
     }

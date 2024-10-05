@@ -52,12 +52,20 @@ router.post('/vehicles/add', async (req, res) => {
   if (!type || !station ) {
     return res.status(400).json({ message: 'Missing type or station' });
   }
-//   if(!(station == "Hall-29") || !(station == "Library-Lawns")||!(station == "Wits-Science-Stadium") || !(station == "Bozolli")){
-//     return res.status(400).json({ message: 'Invalid station' });
-//   }
-// if(!(type == "Bicycle") || !(type == "Scooter") || !(type == "Skateboard") )
+
 
   try {
+    const validStations = ["Hall 29 Rental Station", "Library Lawns Rental Station", "WSS Rental Station", "Bozolli Rental Station"];
+    if (!validStations.includes(station)) {
+      return res.status(400).json({ message: 'Invalid station' });
+    }
+
+    // Validate the vehicle type
+    const validVehicleTypes = ["Bicycle", "Scooter", "Skateboard"];
+    if (!validVehicleTypes.includes(type)) {
+      return res.status(400).json({ message: 'Invalid vehicle type' });
+    }
+
     const newVehicle = new Vehicles({ type, station });
     await newVehicle.save();
     res.status(201).json({ message: 'Vehicle added successfully', vehicles: newVehicle });
