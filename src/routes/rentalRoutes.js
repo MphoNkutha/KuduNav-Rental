@@ -7,8 +7,10 @@ const router = express.Router();
 
 // Get all rentals
 router.get('/rentals', async (req, res) => {
+
   try {
-    const rentals = await Rental.find();
+    const {userId} = req.body
+    const rentals = await Rental.find({userId});
     res.status(200).send(rentals);
   } catch (error) {
     res.status(500).send(error);
