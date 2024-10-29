@@ -10,8 +10,11 @@ router.get('/rentals?userId', async (req, res) => {
 
   try {
     const userId = req.params.userId
-    const rentals = await Rental.find({userId});
-    res.status(200).send(rentals);
+    const _rentals = await Rental.find({userId});
+    const payload = await Promise.all(_rentals.map(async (_) => {
+      const vehicle = await Vehicle.find({_id:_.vehicleID})
+      return VehiclesObj[vehicle.type]}))
+    res.status(200).send(payload);
   } catch (error) {
     res.status(500).send(error);
   }
