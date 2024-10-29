@@ -1,53 +1,67 @@
-import express from 'express';
-import Rental from '../models/rental.js'; 
-import Vehicle, { Prices, VehiclesObj } from '../models/vehicles.js';
-
+import express from "express";
+import Rental from "../models/rental.js";
+import Vehicle, { Prices, VehiclesObj } from "../models/vehicles.js";
 
 const router = express.Router();
 
 // Get all rentals
-router.get('/rentals', async (req, res) => {
-
+router.get("/rentals", async (req, res) => {
   try {
-    const userId = req.user
-    const _rentals = await Rental.find({userId});
-    const payload = await Promise.all(_rentals.map(async (_) => {
-      const vehicle = await Vehicle.find({_id:_.vehicleID})
-      return VehiclesObj[vehicle.type]}))
+    const userId = req.user;
+    const _rentals = await Rental.find({ userId }).sort({rentTimestamp:-1});
+    let payload = await Promise.all(
+      _rentals.map(async (_) => {
+        const vehicle = await Vehicle.findOne({ _id: _.vehicleID });
+        const v = VehiclesObj.find((obj) => obj.name == vehicle?.type)
+        const obj = {..._._doc, vehicle:v}
+        return obj;
+      })
+    );
+    payload = payload.filter((_) => _ != null)
     res.status(200).send(payload);
   } catch (error) {
+    console.log(error)
     res.status(500).send(error);
   }
 });
 
 // Rent a vehicle
-router.post('/rentals/add', async (req, res) => {
+router.post("/rentals/add", async (req, res) => {
   try {
     const { type, station } = req.body; // Get all necessary data
-    const userId = req.user
-    const vehicle = await Vehicle.findOne({type, available:true,station });
-    
+    const userId = req.user;
+    const vehicle = await Vehicle.findOne({ type, available: true, station });
+
     if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
+      return res.status(404).json({ message: "Vehicle not found" });
     }
 
     vehicle.available = false;
-    await vehicle.save(); 
-    
-    const newRental = await Rental.findOne({ userId, used:false, amount:Prices[type] });
-    newRental.vehicleID = vehicle._id
-    newRental.pickupPoint = station
-    newRental.used = true
+    await vehicle.save();
+
+    const newRental = await Rental.findOne({
+      userId,
+      used: false,
+      amount: Prices[type],
+    });
+    newRental.vehicleID = vehicle._id;
+    newRental.pickupPoint = station;
+    newRental.used = true;
     await newRental.save();
-    
-    res.status(201).json({ message: 'Vehicle rental object created successfully', rental: newRental });
+
+    res
+      .status(201)
+      .json({
+        message: "Vehicle rental object created successfully",
+        rental: newRental,
+      });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // Get a rental by ID
-router.get('/rentals/:id', async (req, res) => {
+router.get("/rentals/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const rental = await Rental.findById(id);
@@ -61,10 +75,10 @@ router.get('/rentals/:id', async (req, res) => {
 });
 
 // Update a rental by ID
-router.put('/rentals/update/:id', async (req, res) => {
+router.put("/rentals/update/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const rental = await Rental.findByIdAndUpdate(id, {...req.body});
+    const rental = await Rental.findByIdAndUpdate(id, { ...req.body });
     if (!rental) {
       return res.status(404).send();
     }
@@ -75,7 +89,7 @@ router.put('/rentals/update/:id', async (req, res) => {
 });
 
 // End a rental and return a vehicle
-router.put('/rentals/return/:id', async (req, res) => {
+router.put("/rentals/return/:id", async (req, res) => {
   const { id } = req.params;
   const { station } = req.body; // Get the drop-off station from request body
 
@@ -83,13 +97,13 @@ router.put('/rentals/return/:id', async (req, res) => {
     // Find the rental by ID
     const rental = await Rental.findById(id);
     if (!rental) {
-      return res.status(404).json({ message: 'Rental not found' });
+      return res.status(404).json({ message: "Rental not found" });
     }
 
     // Find the vehicle associated with the rental
     const vehicle = await Vehicle.findById(rental.vehicleID);
     if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
+      return res.status(404).json({ message: "Vehicle not found" });
     }
 
     // Update the vehicle's availability and station
@@ -97,11 +111,11 @@ router.put('/rentals/return/:id', async (req, res) => {
     vehicle.station = station; // Update the vehicle's station
     await vehicle.save();
 
-    rental.returnedAt = new Date(); 
+    rental.returnedAt = new Date();
     rental.station = station;
     await rental.save();
 
-    res.status(200).json({ message: 'Vehicle returned successfully', vehicle });
+    res.status(200).json({ message: "Vehicle returned successfully", vehicle });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
