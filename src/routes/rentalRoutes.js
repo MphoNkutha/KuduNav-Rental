@@ -1,6 +1,6 @@
 import express from 'express';
 import Rental from '../models/rental.js'; 
-import Vehicle, { Prices } from '../models/vehicles.js';
+import Vehicle, { Prices, VehiclesObj } from '../models/vehicles.js';
 
 
 const router = express.Router();
