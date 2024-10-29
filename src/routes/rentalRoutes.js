@@ -6,10 +6,10 @@ import Vehicle, { Prices, VehiclesObj } from '../models/vehicles.js';
 const router = express.Router();
 
 // Get all rentals
-router.get('/rentals?userId', async (req, res) => {
+router.get('/rentals', async (req, res) => {
 
   try {
-    const userId = req.params.userId
+    const userId = req.user
     const _rentals = await Rental.find({userId});
     const payload = await Promise.all(_rentals.map(async (_) => {
       const vehicle = await Vehicle.find({_id:_.vehicleID})
