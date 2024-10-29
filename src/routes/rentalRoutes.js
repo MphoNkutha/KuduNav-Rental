@@ -6,10 +6,10 @@ import Vehicle, { Prices } from '../models/vehicles.js';
 const router = express.Router();
 
 // Get all rentals
-router.get('/rentals', async (req, res) => {
+router.get('/rentals?userId', async (req, res) => {
 
   try {
-    const {userId} = req.body
+    const userId = req.params.userId
     const rentals = await Rental.find({userId});
     res.status(200).send(rentals);
   } catch (error) {
