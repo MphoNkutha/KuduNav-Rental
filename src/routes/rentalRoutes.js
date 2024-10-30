@@ -1,72 +1,88 @@
 import express from 'express';
 import Rental from '../models/rental.js'; 
 import Vehicle from '../models/vehicles.js';
+import axios from 'axios';
 
 
 const router = express.Router();
+// const newNotification = await axios.post("https://gateway.tandemworkflow.com/api/v1/notification/create/notification")
+async function createNotification(notificationData) {
+  try {
+    const response = await axios.post("https://gateway.tandemworkflow.com/api/v1/notification/create/notification", notificationData);
+    console.log("Notification created:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    throw error;
+  }
+}
+
 
 // Get all rentals
-router.get('/rentals', async (req, res) => {
+router.get("/rentals", async (req, res) => {
   try {
-    const rentals = await Rental.find();
-    res.status(200).send(rentals);
+    const userId = req.user;
+    const _rentals = await Rental.find({ userId }).sort({rentTimestamp:-1});
+    let payload = await Promise.all(
+      _rentals.map(async (_) => {
+        const vehicle = await Vehicle.findOne({ _id: _.vehicleID });
+        const v = VehiclesObj.find((obj) => obj.name == vehicle?.type)
+        const obj = {..._._doc, vehicle:v}
+        return obj;
+      })
+    );
+    payload = payload.filter((_) => _ != null)
+    res.status(200).send(payload);
   } catch (error) {
+    console.log(error)
     res.status(500).send(error);
   }
 });
 
 // Rent a vehicle, given vehicle type, station, and user ID
-router.post('/rentals/add', async (req, res) => {
-  const { type, station, userId} = req.body;
-
+router.post("/rentals/add", async (req, res) => {
   try {
-    // Validate the station
-    const validStations = ["Hall 29 Rental Station", "Library Lawns Rental Station", "WSS Rental Station", "Bozolli Rental Station"];
-    if (!validStations.includes(station)) {
-      return res.status(400).json({ message: 'Invalid station' });
+    const { type, station } = req.body; // Get all necessary data
+    const userId = req.user;
+    const vehicle = await Vehicle.findOne({ type, available: true, station });
+
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    // Validate the vehicle type
-    const validVehicleTypes = ["Bicycle", "Scooter", "Skateboard"];
-    if (!validVehicleTypes.includes(type)) {
-      return res.status(400).json({ message: 'Invalid vehicle type' });
-    }
+    vehicle.available = false;
+    await vehicle.save();
 
-    //Validate userId
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' });
-    }
-
-    // Find all available vehicles at the station
-    const availableVehicles = await Vehicle.find({ type, station, available: true });
-    
-    // If no available vehicles, return an error message
-    if (availableVehicles.length === 0) {
-      return res.status(404).json({ message: 'No available vehicles at this station' });
-    }
-
-    // Select the first available vehicle and reserve it
-    const selectedVehicle = availableVehicles[0];
-    selectedVehicle.available = false; // Mark it as unavailable
-    await selectedVehicle.save(); // Save the updated vehicle status
-
-    
-    const newRental = new Rental({
-      vehicleID: selectedVehicle._id,
-      userId
+    const newRental = await Rental.findOne({
+      userId,
+      used: false,
+      amount: Prices[type],
     });
+    newRental.vehicleID = vehicle._id;
+    newRental.pickupPoint = station;
+    newRental.used = true;
     await newRental.save();
 
-    
-    res.status(201).json({
-      message: 'Rental successful',
-      vehicle: selectedVehicle,
-      rental: newRental
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error });
+    res
+      .status(201)
+      .json({
+        message: "Vehicle rental object created successfully",
+        rental: newRental,
+      });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+
+  const notificationData = {
+    type: "Rental Request",
+    message: "You have successfully rented a vehicle",
+    targetedUsers: [userId],   // Identifier for the user    
+    scheduleTime: Date.now() + 5 * 60000, // 5 minutes from now
+  };
+  
+  // Call the function to create a notification
+  const not = await createNotification(notificationData);
+  console.log(not)
 });
 
 // Get a rental by ID

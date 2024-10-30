@@ -101,29 +101,214 @@ describe('Rental Endpoints', () => {
 });
 
 describe('Reservation Endpoints', () => {
-  it('should create a new reservation', async () => {
-    await Vehicle.create({ type: 'Scooter', station: 'WSS Rental Station', available: true });
 
-    const res = await request(app)
-      .post('/reservations/add')
-      .send({
-        type: 'Scooter',
-        station: 'WSS Rental Station',
-        userId: '789012',
+  describe('POST /reservations/add', () => {
+    it('should create a new reservation with valid data', async () => {
+      await Vehicle.create({ 
+        type: 'Scooter', 
+        station: 'WSS Rental Station', 
+        available: true 
       });
-    expect(res.statusCode).toBe(201);
-    expect(res.body.reservation.userId).toBe('789012');
+
+      const plannedPickupTime = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
+      
+      const res = await request(app)
+        .post('/reservations/add')
+        .send({
+          type: 'Scooter',
+          station: 'WSS Rental Station',
+          userId: '789012',
+          plannedPickupTime
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.reservation.userId).toBe('789012');
+      expect(res.body.reservation.status).toBe('active');
+      // expect(new Date(res.body.reservation.plannedPickupTime)).toEqual(plannedPickupTime);
+      // expect(new Date(res.body.reservation.expiresAt)).toEqual(
+      //   new Date(plannedPickupTime.getTime() + 15 * 60000)
+      // );
+    });
+
+    it('should reject reservation with invalid station', async () => {
+      const res = await request(app)
+        .post('/reservations/add')
+        .send({
+          type: 'Scooter',
+          station: 'Invalid Station',
+          userId: '789012',
+          plannedPickupTime: new Date(Date.now() + 3600000)
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Invalid station');
+    });
+
+    it('should reject reservation with past pickup time', async () => {
+      await Vehicle.create({ 
+        type: 'Scooter', 
+        station: 'WSS Rental Station', 
+        available: true 
+      });
+
+      const res = await request(app)
+        .post('/reservations/add')
+        .send({
+          type: 'Scooter',
+          station: 'WSS Rental Station',
+          userId: '789012',
+          plannedPickupTime: new Date(Date.now() - 3600000) // 1 hour ago
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Planned pickup time must be in the future');
+    });
   });
 
-  it('should redeem a reservation', async () => {
-    const vehicle = await Vehicle.create({ type: 'Skateboard', station: 'Bozolli Rental Station', available: false });
-    const reservation = await Reservation.create({ vehicleId: vehicle._id, userId: '789012' });
+  describe('POST /reservations/redeem', () => {
+    it('should successfully redeem a valid reservation', async () => {
+      const vehicle = await Vehicle.create({ 
+        type: 'Skateboard', 
+        station: 'Bozolli Rental Station', 
+        available: false 
+      });
 
-    const res = await request(app)
-      .post(`/reservations/redeem`)
-      .send({ reservationId: reservation._id });
-    expect(res.statusCode).toBe(201);
-    expect(res.body.rental.userId).toBe('789012');
+      const plannedPickupTime = new Date(Date.now() - 5 * 60000); // 5 minutes ago
+      const reservation = await Reservation.create({ 
+        vehicleId: vehicle._id, 
+        userId: '789012',
+        status: 'active',
+        plannedPickupTime,
+        expiresAt: new Date(plannedPickupTime.getTime() + 15 * 60000)
+      });
+
+      const res = await request(app)
+        .post('/reservations/redeem')
+        .send({ reservationId: reservation._id });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.rental.userId).toBe('789012');
+      expect(res.body.reservation.status).toBe('redeemed');
+    });
+
+    it('should reject early redemption', async () => {
+      const vehicle = await Vehicle.create({ 
+        type: 'Skateboard', 
+        station: 'Bozolli Rental Station', 
+        available: false 
+      });
+
+      const plannedPickupTime = new Date(Date.now() + 3600000); // 1 hour from now
+      const reservation = await Reservation.create({ 
+        vehicleId: vehicle._id, 
+        userId: '789012',
+        status: 'active',
+        plannedPickupTime,
+        expiresAt: new Date(plannedPickupTime.getTime() + 15 * 60000)
+      });
+
+      const res = await request(app)
+        .post('/reservations/redeem')
+        .send({ reservationId: reservation._id });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Too early to redeem. Please come back at the planned pickup time');
+    });
+
+    it('should reject expired reservation redemption', async () => {
+      const vehicle = await Vehicle.create({ 
+        type: 'Skateboard', 
+        station: 'Bozolli Rental Station', 
+        available: false 
+      });
+
+      const plannedPickupTime = new Date(Date.now() - 30 * 60000); // 30 minutes ago
+      const reservation = await Reservation.create({ 
+        vehicleId: vehicle._id, 
+        userId: '789012',
+        status: 'active',
+        plannedPickupTime,
+        expiresAt: new Date(plannedPickupTime.getTime() + 15 * 60000)
+      });
+
+      const res = await request(app)
+        .post('/reservations/redeem')
+        .send({ reservationId: reservation._id });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Reservation has expired');
+
+      // Verify vehicle is made available again
+      const updatedVehicle = await Vehicle.findById(vehicle._id);
+      expect(updatedVehicle.available).toBe(true);
+    });
+  });
+
+  describe('GET /reservations', () => {
+    it('should return only active reservations', async () => {
+      const vehicle = await Vehicle.create({ 
+        type: 'Skateboard', 
+        station: 'Bozolli Rental Station', 
+        available: false 
+      });
+
+      await Reservation.create([
+        {
+          vehicleId: vehicle._id,
+          userId: '789012',
+          status: 'active',
+          plannedPickupTime: new Date(Date.now() + 3600000),
+          expiresAt: new Date(Date.now() + 3600000 + 15 * 60000)
+        },
+        {
+          vehicleId: vehicle._id,
+          userId: '789013',
+          status: 'expired',
+          plannedPickupTime: new Date(Date.now() - 3600000),
+          expiresAt: new Date(Date.now() - 3600000 + 15 * 60000)
+        }
+      ]);
+
+      const res = await request(app)
+        .get('/reservations');
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBe(1);
+      expect(res.body[0].status).toBe('active');
+      expect(res.body[0].userId).toBe('789012');
+    });
+  });
+
+  describe('GET /reservations/:id', () => {
+    it('should return a specific reservation', async () => {
+      const vehicle = await Vehicle.create({ 
+        type: 'Skateboard', 
+        station: 'Bozolli Rental Station', 
+        available: false 
+      });
+
+      const reservation = await Reservation.create({
+        vehicleId: vehicle._id,
+        userId: '789012',
+        status: 'active',
+        plannedPickupTime: new Date(Date.now() + 3600000),
+        expiresAt: new Date(Date.now() + 3600000 + 15 * 60000)
+      });
+
+      const res = await request(app)
+        .get(`/reservations/${reservation._id}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.userId).toBe('789012');
+    });
+
+    it('should return 404 for non-existent reservation', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .get(`/reservations/${nonExistentId}`);
+
+      expect(res.statusCode).toBe(404);
+    });
   });
 });
 
